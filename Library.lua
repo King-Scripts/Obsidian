@@ -6380,7 +6380,7 @@ function Library:CreateWindow(WindowInfo)
         Library.KeybindFrame.Position = UDim2.new(0, 6, 0.5, 0)
         Library.KeybindFrame.Visible = false
 
-    --// MainFrame con Glow Coloreable \\--
+    --// MainFrame con Glow Coloreable + Animación \\--
     MainFrame = New("TextButton", {
         BackgroundColor3 = function()
             return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
@@ -6393,32 +6393,31 @@ function Library:CreateWindow(WindowInfo)
         Parent = ScreenGui,
     })
 
-    -- Glow principal (borde exterior)
-    local MainGlow = New("ImageLabel", {
+    -- Glow System (Guardamos referencias globales en Library)
+    Library.MainGlow = New("ImageLabel", {
         Name = "Glow",
         BackgroundTransparency = 1,
-        Image = "rbxassetid://1316045217",  -- Glow suave y bonito
-        ImageColor3 = "AccentColor",        -- Color del glow (coloreable)
-        ImageTransparency = 0.65,
+        Image = "rbxassetid://1316045217",
+        ImageColor3 = Library.Scheme.AccentColor,
+        ImageTransparency = 0.6,
         ScaleType = Enum.ScaleType.Slice,
         SliceCenter = Rect.new(10, 10, 118, 118),
-        Size = UDim2.new(1, 30, 1, 30),     -- Más grande que el frame
-        Position = UDim2.new(0, -15, 0, -15),
+        Size = UDim2.new(1, 40, 1, 40),
+        Position = UDim2.new(0, -20, 0, -20),
         ZIndex = MainFrame.ZIndex - 1,
         Parent = MainFrame,
     })
 
-    -- Glow secundario más fuerte (opcional, para más profundidad)
-    local MainGlow2 = New("ImageLabel", {
+    Library.MainGlow2 = New("ImageLabel", {
         Name = "GlowStrong",
         BackgroundTransparency = 1,
         Image = "rbxassetid://1316045217",
-        ImageColor3 = "AccentColor",
-        ImageTransparency = 0.85,
+        ImageColor3 = Library.Scheme.AccentColor,
+        ImageTransparency = 0.82,
         ScaleType = Enum.ScaleType.Slice,
         SliceCenter = Rect.new(10, 10, 118, 118),
-        Size = UDim2.new(1, 50, 1, 50),
-        Position = UDim2.new(0, -25, 0, -25),
+        Size = UDim2.new(1, 60, 1, 60),
+        Position = UDim2.new(0, -30, 0, -30),
         ZIndex = MainFrame.ZIndex - 2,
         Parent = MainFrame,
     })
@@ -9429,6 +9428,40 @@ function Library:SetMainGlowIntensity(Strength: number)
     end
     if MainGlow2 then
         MainGlow2.ImageTransparency = baseTrans + 0.2
+    end
+end
+
+--// Glow Functions con Animación \\--
+local GlowTweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+function Library:SetGlowColor(Color: Color3)
+    if Library.MainGlow then
+        TweenService:Create(Library.MainGlow, GlowTweenInfo, {ImageColor3 = Color}):Play()
+    end
+    if Library.MainGlow2 then
+        TweenService:Create(Library.MainGlow2, GlowTweenInfo, {ImageColor3 = Color}):Play()
+    end
+end
+
+function Library:SetGlowTransparency(Transparency: number)
+    Transparency = math.clamp(Transparency, 0, 0.95)
+    if Library.MainGlow then
+        TweenService:Create(Library.MainGlow, GlowTweenInfo, {ImageTransparency = Transparency}):Play()
+    end
+    if Library.MainGlow2 then
+        TweenService:Create(Library.MainGlow2, GlowTweenInfo, {ImageTransparency = math.min(Transparency + 0.22, 0.97)}):Play()
+    end
+end
+
+function Library:SetGlowIntensity(Strength: number)
+    Strength = math.clamp(Strength, 0.3, 3)
+    local baseTrans = 0.58 / Strength
+
+    if Library.MainGlow then
+        TweenService:Create(Library.MainGlow, GlowTweenInfo, {ImageTransparency = baseTrans}):Play()
+    end
+    if Library.MainGlow2 then
+        TweenService:Create(Library.MainGlow2, GlowTweenInfo, {ImageTransparency = baseTrans + 0.24}):Play()
     end
 end
 
