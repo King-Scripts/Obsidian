@@ -6380,11 +6380,9 @@ function Library:CreateWindow(WindowInfo)
         Library.KeybindFrame.Position = UDim2.new(0, 6, 0.5, 0)
         Library.KeybindFrame.Visible = false
 
---// MainFrame con Background Image (sin Glow) \\--
+    --// MainFrame con Background Image completa (sin glow) \\--
     MainFrame = New("TextButton", {
-        BackgroundColor3 = function()
-            return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
-        end,
+        BackgroundTransparency = 1,   -- Fondo transparente
         Name = "Main",
         Text = "",
         Position = WindowInfo.Position,
@@ -6394,19 +6392,19 @@ function Library:CreateWindow(WindowInfo)
         ClipsDescendants = true,
     })
 
-    -- Background Image (la que pediste)
+    -- Imagen de fondo completa (reemplaza todo el fondo del hub)
     Library.BackgroundImage = New("ImageLabel", {
         Name = "BackgroundImage",
         BackgroundTransparency = 1,
         Image = "https://i.imgur.com/4QZJxL9.png",
-        ImageTransparency = 0.75,           -- Ajusta aquí (0 = más visible, 1 = casi invisible)
-        ScaleType = Enum.ScaleType.Crop,    -- Mejor para fondos completos
+        ImageTransparency = 0.65,           -- Ajusta aquí (0 = imagen fuerte, 0.8 = más suave)
+        ScaleType = Enum.ScaleType.Crop,    -- Crop para que llene todo el hub
         Size = UDim2.new(1, 0, 1, 0),
         ZIndex = 0,
         Parent = MainFrame,
     })
 
-    -- Corner para que la imagen respete la forma redondeada del hub
+    -- Corner para que la imagen respete las esquinas redondeadas del hub
     table.insert(
         Library.Corners,
         New("UICorner", {
