@@ -6380,7 +6380,7 @@ function Library:CreateWindow(WindowInfo)
         Library.KeybindFrame.Position = UDim2.new(0, 6, 0.5, 0)
         Library.KeybindFrame.Visible = false
 
-    --// MainFrame con Glow Mejorado + Partículas \\--
+    --// MainFrame con Glow + Partículas + Background Image \\--
     MainFrame = New("TextButton", {
         BackgroundColor3 = function()
             return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
@@ -6394,22 +6394,41 @@ function Library:CreateWindow(WindowInfo)
         ClipsDescendants = true,
     })
 
-    -- Glow principal (mejor asset + slice mejorado)
+    -- Background Image (la que pediste)
+    Library.BackgroundImage = New("ImageLabel", {
+        Name = "BackgroundImage",
+        BackgroundTransparency = 1,
+        Image = "https://i.imgur.com/4QZJxL9.png",
+        ImageTransparency = 0.75,        -- Ajusta aquí (0 = opaco, 1 = invisible)
+        ScaleType = Enum.ScaleType.Crop, -- o Enum.ScaleType.Fit si prefieres
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = 0,
+        Parent = MainFrame,
+    })
+
+    table.insert(
+        Library.Corners,
+        New("UICorner", {
+            CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
+            Parent = Library.BackgroundImage,
+        })
+    )
+
+    -- Glow principal
     Library.MainGlow = New("ImageLabel", {
         Name = "Glow",
         BackgroundTransparency = 1,
-        Image = "rbxassetid://3570695787",   -- Asset glow más confiable y suave
+        Image = "rbxassetid://3570695787",
         ImageColor3 = Library.Scheme.AccentColor,
         ImageTransparency = 0.68,
         ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(20, 20, 280, 280),   -- Mejor para esquinas redondeadas
+        SliceCenter = Rect.new(20, 20, 280, 280),
         Size = UDim2.new(1, 50, 1, 50),
         Position = UDim2.new(0, -25, 0, -25),
         ZIndex = MainFrame.ZIndex - 1,
         Parent = MainFrame,
     })
 
-    -- Glow secundario (más sutil)
     Library.MainGlow2 = New("ImageLabel", {
         Name = "GlowStrong",
         BackgroundTransparency = 1,
@@ -6424,7 +6443,7 @@ function Library:CreateWindow(WindowInfo)
         Parent = MainFrame,
     })
 
-    -- Partículas en el fondo (como pediste)
+    -- Partículas
     local ParticlesHolder = New("Frame", {
         Name = "Particles",
         Size = UDim2.new(1, 0, 1, 0),
@@ -6460,7 +6479,6 @@ function Library:CreateWindow(WindowInfo)
         end
     end)
 
-    -- Corner del hub
     table.insert(
         Library.Corners,
         New("UICorner", {
@@ -9459,5 +9477,19 @@ function Library:SetGlowIntensity(Strength: number)
     if Library.MainGlow then Library.MainGlow.ImageTransparency = base end
     if Library.MainGlow2 then Library.MainGlow2.ImageTransparency = base + 0.22 end
 end
+--// Control de Background Image \\--
+function Library:SetBackgroundImage(ImageUrl: string, Transparency: number?)
+    if Library.BackgroundImage then
+        Library.BackgroundImage.Image = ImageUrl
+        if Transparency then
+            Library.BackgroundImage.ImageTransparency = math.clamp(Transparency, 0, 1)
+        end
+    end
+end
 
+function Library:SetBackgroundTransparency(Trans: number)
+    if Library.BackgroundImage then
+        Library.BackgroundImage.ImageTransparency = math.clamp(Trans, 0, 1)
+    end
+end
 return Library
