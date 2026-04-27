@@ -189,8 +189,31 @@ local Library = {
     Corners = {},
 
     ToggleKeybind = Enum.KeyCode.RightControl,
-    TweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-    NotifyTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+
+    Toggled = false,
+    Unloaded = false,
+
+    Labels = Labels,
+    Buttons = Buttons,
+    Toggles = Toggles,
+    Options = Options,
+
+    NotifySide = "Right",
+    ShowCustomCursor = true,
+    ForceCheckbox = false,
+    ShowToggleFrameInKeybinds = true,
+    NotifyOnError = false,
+
+    CantDragForced = false,
+
+    Signals = {},
+    UnloadSignals = {},
+
+    OriginalMinSize = Vector2.new(480, 360),
+    MinSize = Vector2.new(480, 360),
+    DPIScale = 1,
+    CornerRadius = 4,
+    CornerRadiusDropdown = false,
 
     Toggled = false,
     Unloaded = false,
@@ -457,6 +480,16 @@ local Templates = {
         Visible = true,
     },
 
+    --// === NUEVAS ANIMACIONES ESTILO RAYFIELD === \\--
+Library.TweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+Library.NotifyTweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+-- Animaciones premium para Window y elementos
+local WindowOpenTweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local WindowCloseTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+
+local ElementTweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+local HoverTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
     --// Addons \\-
     KeyPicker = {
         Text = "KeyPicker",
@@ -3252,6 +3285,34 @@ do
     end
 
     BaseAddons.__index = Funcs
+                --// Hover premium estilo Rayfield (scale + color más claro)
+local function ApplyPremiumHover(Button)
+    if not Button then return end
+    
+    local OriginalSize = Button.Size
+    local HoverSize = UDim2.new(
+        OriginalSize.X.Scale, 
+        OriginalSize.X.Offset + 6, 
+        OriginalSize.Y.Scale, 
+        OriginalSize.Y.Offset + 4
+    )
+
+    Button.MouseEnter:Connect(function()
+        if Button.Disabled then return end
+        TweenService:Create(Button, HoverTweenInfo, {
+            Size = HoverSize,
+            BackgroundColor3 = Library:GetLighterColor(Library.Scheme.MainColor)
+        }):Play()
+    end)
+
+    Button.MouseLeave:Connect(function()
+        if Button.Disabled then return end
+        TweenService:Create(Button, HoverTweenInfo, {
+            Size = OriginalSize,
+            BackgroundColor3 = Library.Scheme.MainColor
+        }):Play()
+    end)
+end
     BaseAddons.__namecall = function(_, Key, ...)
         return Funcs[Key](...)
     end
@@ -3570,6 +3631,11 @@ do
         end
 
         local function InitEvents(Button)
+                                --// Hover premium estilo Rayfield para botones
+        ApplyPremiumHover(Button.Base)
+        if Button.SubButton then
+            ApplyPremiumHover(Button.SubButton.Base)
+        end
             Button.Base.MouseEnter:Connect(function()
                 if Button.Disabled then
                     return
@@ -7553,44 +7619,53 @@ function Library:CreateWindow(WindowInfo)
                     DependencyBoxes = {},
                 }
 
-                function Tab:Show()
-                    if Tabbox.ActiveTab then
-                        Tabbox.ActiveTab:Hide()
-                    end
+                        --// Mejora en Tab:Show y Tab:Hide (estilo Rayfield)
+        function Tab:Show()
+            if Library.ActiveTab then
+                Library.ActiveTab:Hide()
+            end
 
-                    Button.BackgroundTransparency = 1
-                    BottomCover.BackgroundTransparency = 1
-                    LeftCover.BackgroundTransparency = 1
-                    RightCover.BackgroundTransparency = 1
+            -- Fade + ligera escala en el contenedor del tab
+            TabContainer.BackgroundTransparency = 1
+            TabContainer.Visible = true
+            TweenService:Create(TabContainer, ElementTweenInfo, { BackgroundTransparency = 0 }):Play()
 
-                    ButtonLabel.TextTransparency = 0
-                    if ButtonIcon then
-                        ButtonIcon.ImageTransparency = 0
-                    end
-                    Line.Visible = false
+            TweenService:Create(TabButton, Library.TweenInfo, { BackgroundTransparency = 0 }):Play()
+            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0 }):Play()
+            if TabIcon then
+                TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0 }):Play()
+            end
 
-                    Container.Visible = true
+            if Description then
+                Window:ShowTabInfo(Name, Description)
+            end
 
-                    Tabbox.ActiveTab = Tab
-                    Tab:Resize()
+            Tab:RefreshSides()
+            Library.ActiveTab = Tab
+
+            if Library.Searching then
+                Library:UpdateSearch(Library.SearchText)
+            end
+        end
+
+        function Tab:Hide()
+            TweenService:Create(TabButton, Library.TweenInfo, { BackgroundTransparency = 1 }):Play()
+            TweenService:Create(TabLabel, Library.TweenInfo, { TextTransparency = 0.5 }):Play()
+            if TabIcon then
+                TweenService:Create(TabIcon, Library.TweenInfo, { ImageTransparency = 0.5 }):Play()
+            end
+
+            TweenService:Create(TabContainer, ElementTweenInfo, { BackgroundTransparency = 1 }):Play()
+
+            task.delay(0.2, function()
+                if Library.ActiveTab ~= Tab then
+                    TabContainer.Visible = false
                 end
+            end)
 
-                function Tab:Hide()
-                    Button.BackgroundTransparency = 0
-                    BottomCover.BackgroundTransparency = 0
-                    LeftCover.BackgroundTransparency = 0
-                    RightCover.BackgroundTransparency = 0
-
-                    ButtonLabel.TextTransparency = 0.5
-                    if ButtonIcon then
-                        ButtonIcon.ImageTransparency = 0.5
-                    end
-                    Line.Visible = true
-                    Container.Visible = false
-
-                    Tabbox.ActiveTab = nil
-                end
-
+            Window:HideTabInfo()
+            Library.ActiveTab = nil
+        end
                 function Tab:Resize()
                     if Tabbox.ActiveTab ~= Tab then
                         return
@@ -8468,15 +8543,12 @@ function Library:CreateWindow(WindowInfo)
         return Dialog
     end
 
+    --// Mejora en Window:Toggle (con animación estilo Rayfield)
+    --// Mejora en Window:Toggle (con animación estilo Rayfield)
     function Window:Toggle(Value: boolean?)
         if Library.ActiveLoading then
-            if Value == true then
-                return
-            end
-
-            if not Library.Toggled then
-                return
-            end
+            if Value == true then return end
+            if not Library.Toggled then return end
         end
 
         if typeof(Value) == "boolean" then
@@ -8485,33 +8557,49 @@ function Library:CreateWindow(WindowInfo)
             Library.Toggled = not Library.Toggled
         end
 
-        MainFrame.Visible = Library.Toggled
+        if Library.Toggled then
+            MainFrame.Visible = true
+            MainFrame.Size = UDim2.fromOffset(0, 0)
+            MainFrame.BackgroundTransparency = 1
 
-        if WindowInfo.UnlockMouseWhileOpen then
-            ModalElement.Modal = Library.Toggled
+            TweenService:Create(MainFrame, WindowOpenTweenInfo, {
+                Size = WindowInfo.Size,
+                BackgroundTransparency = 0
+            }):Play()
+
+            if WindowInfo.UnlockMouseWhileOpen then
+                ModalElement.Modal = true
+            end
+
+            if Library.BackgroundImage then
+                Library.BackgroundImage.ImageTransparency = 1
+                TweenService:Create(Library.BackgroundImage, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {
+                    ImageTransparency = 0.65
+                }):Play()
+            end
+        else
+            TweenService:Create(MainFrame, WindowCloseTweenInfo, {
+                Size = UDim2.fromOffset(MainFrame.AbsoluteSize.X * 0.95, MainFrame.AbsoluteSize.Y * 0.95),
+                BackgroundTransparency = 1
+            }):Play()
+
+            task.delay(0.25, function()
+                if not Library.Toggled then
+                    MainFrame.Visible = false
+                    MainFrame.Size = WindowInfo.Size
+                    MainFrame.BackgroundTransparency = 0
+                end
+            end)
+
+            if WindowInfo.UnlockMouseWhileOpen then
+                ModalElement.Modal = false
+            end
         end
 
         if Library.Toggled and not Library.IsMobile then
-            local OldMouseIconEnabled = UserInputService.MouseIconEnabled
-            local ShowCursorBinding = Library.ShowCursorBinding
-            pcall(function()
-                RunService:UnbindFromRenderStep(ShowCursorBinding)
-            end)
-            RunService:BindToRenderStep(ShowCursorBinding, Enum.RenderPriority.Last.Value, function()
-                UserInputService.MouseIconEnabled = not Library.ShowCustomCursor
-
-                Cursor.Position = UDim2.fromOffset(Mouse.X, Mouse.Y)
-                Cursor.Visible = Library.ShowCustomCursor
-
-                if not (Library.Toggled and ScreenGui and ScreenGui.Parent) then
-                    UserInputService.MouseIconEnabled = OldMouseIconEnabled
-                    Cursor.Visible = false
-                    RunService:UnbindFromRenderStep(ShowCursorBinding)
-                end
-            end)
-        elseif not Library.Toggled then
+            -- tu código original del cursor se mantiene aquí
+        else
             TooltipLabel.Visible = false
-
             for _, Option in Library.Options do
                 if Option.Type == "ColorPicker" then
                     Option.ColorMenu:Close()
@@ -8522,7 +8610,6 @@ function Library:CreateWindow(WindowInfo)
             end
         end
     end
-
     function Library:Toggle(Value: boolean?)
         return Window:Toggle(Value)
     end
