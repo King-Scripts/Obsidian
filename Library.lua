@@ -6380,8 +6380,7 @@ function Library:CreateWindow(WindowInfo)
         Library.KeybindFrame.Position = UDim2.new(0, 6, 0.5, 0)
         Library.KeybindFrame.Visible = false
 
-    --// MainFrame con Glow Coloreable + Animación \\--
-        --// MainFrame con Glow + Partículas \\--
+    --// MainFrame con Glow Mejorado + Partículas \\--
     MainFrame = New("TextButton", {
         BackgroundColor3 = function()
             return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
@@ -6392,39 +6391,40 @@ function Library:CreateWindow(WindowInfo)
         Size = WindowInfo.Size,
         Visible = false,
         Parent = ScreenGui,
-        ClipsDescendants = true,   -- Necesario para las partículas
+        ClipsDescendants = true,
     })
 
-    -- Glow que respeta la curvatura
+    -- Glow principal (mejor asset + slice mejorado)
     Library.MainGlow = New("ImageLabel", {
         Name = "Glow",
         BackgroundTransparency = 1,
-        Image = "rbxassetid://1316045217",
+        Image = "rbxassetid://3570695787",   -- Asset glow más confiable y suave
         ImageColor3 = Library.Scheme.AccentColor,
-        ImageTransparency = 0.65,
+        ImageTransparency = 0.68,
         ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(10, 10, 118, 118),
-        Size = UDim2.new(1, 40, 1, 40),
-        Position = UDim2.new(0, -20, 0, -20),
+        SliceCenter = Rect.new(20, 20, 280, 280),   -- Mejor para esquinas redondeadas
+        Size = UDim2.new(1, 50, 1, 50),
+        Position = UDim2.new(0, -25, 0, -25),
         ZIndex = MainFrame.ZIndex - 1,
         Parent = MainFrame,
     })
 
+    -- Glow secundario (más sutil)
     Library.MainGlow2 = New("ImageLabel", {
         Name = "GlowStrong",
         BackgroundTransparency = 1,
-        Image = "rbxassetid://1316045217",
+        Image = "rbxassetid://3570695787",
         ImageColor3 = Library.Scheme.AccentColor,
         ImageTransparency = 0.85,
         ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(10, 10, 118, 118),
-        Size = UDim2.new(1, 65, 1, 65),
-        Position = UDim2.new(0, -32.5, 0, -32.5),
+        SliceCenter = Rect.new(20, 20, 280, 280),
+        Size = UDim2.new(1, 80, 1, 80),
+        Position = UDim2.new(0, -40, 0, -40),
         ZIndex = MainFrame.ZIndex - 2,
         Parent = MainFrame,
     })
 
-    -- Partículas de fondo
+    -- Partículas en el fondo (como pediste)
     local ParticlesHolder = New("Frame", {
         Name = "Particles",
         Size = UDim2.new(1, 0, 1, 0),
@@ -6435,37 +6435,32 @@ function Library:CreateWindow(WindowInfo)
 
     local function CreateParticle()
         local p = New("Frame", {
-            Size = UDim2.fromOffset(math.random(2, 5), math.random(2, 5)),
+            Size = UDim2.fromOffset(math.random(2,5), math.random(2,5)),
             Position = UDim2.new(math.random(), 0, 1, 0),
             BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-            BackgroundTransparency = 0.5,
+            BackgroundTransparency = 0.45,
             BorderSizePixel = 0,
             ZIndex = 2,
             Parent = ParticlesHolder,
         })
         New("UICorner", { CornerRadius = UDim.new(1, 0), Parent = p })
 
-        local tween = TweenService:Create(
-            p,
-            TweenInfo.new(math.random(5, 9), Enum.EasingStyle.Linear),
-            {
-                Position = UDim2.new(math.random(), 0, -0.1, 0),
-                BackgroundTransparency = 1
-            }
-        )
+        local tween = TweenService:Create(p, TweenInfo.new(math.random(4,8), Enum.EasingStyle.Linear), {
+            Position = UDim2.new(math.random(), 0, -0.1, 0),
+            BackgroundTransparency = 1
+        })
         tween:Play()
-        tween.Completed:Connect(function()
-            p:Destroy()
-        end)
+        tween.Completed:Connect(function() p:Destroy() end)
     end
 
     task.spawn(function()
         while MainFrame and MainFrame.Parent do
             CreateParticle()
-            task.wait(0.12)
+            task.wait(0.13)
         end
     end)
 
+    -- Corner del hub
     table.insert(
         Library.Corners,
         New("UICorner", {
@@ -6473,10 +6468,7 @@ function Library:CreateWindow(WindowInfo)
             Parent = MainFrame,
         })
     )
-    table.insert(
-        Library.Scales,
-        New("UIScale", { Parent = MainFrame })
-    )
+    table.insert(Library.Scales, New("UIScale", { Parent = MainFrame }))
     Library:AddOutline(MainFrame)
         Library:MakeLine(MainFrame, {
             Position = UDim2.fromOffset(0, 48),
@@ -9440,50 +9432,32 @@ Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange))
 
 getgenv().Library = Library
     
---// Funciones de Control Externo (Glow + AccentColor) \\--
-
+--// Control de Glow y AccentColor (sin animación) \\--
 function Library:SetAccentColor(Color: Color3)
     Library.Scheme.AccentColor = Color
     Library:UpdateColorsUsingRegistry()
-    
-    -- Actualizar glow
-    if Library.MainGlow then
-        Library.MainGlow.ImageColor3 = Color
-    end
-    if Library.MainGlow2 then
-        Library.MainGlow2.ImageColor3 = Color
-    end
+
+    -- Actualiza glow automáticamente
+    if Library.MainGlow then Library.MainGlow.ImageColor3 = Color end
+    if Library.MainGlow2 then Library.MainGlow2.ImageColor3 = Color end
 end
 
 function Library:SetGlowColor(Color: Color3)
-    if Library.MainGlow then
-        Library.MainGlow.ImageColor3 = Color
-    end
-    if Library.MainGlow2 then
-        Library.MainGlow2.ImageColor3 = Color
-    end
+    if Library.MainGlow then Library.MainGlow.ImageColor3 = Color end
+    if Library.MainGlow2 then Library.MainGlow2.ImageColor3 = Color end
 end
 
 function Library:SetGlowTransparency(Trans: number)
     Trans = math.clamp(Trans, 0, 0.95)
-    if Library.MainGlow then
-        Library.MainGlow.ImageTransparency = Trans
-    end
-    if Library.MainGlow2 then
-        Library.MainGlow2.ImageTransparency = math.min(Trans + 0.2, 0.97)
-    end
+    if Library.MainGlow then Library.MainGlow.ImageTransparency = Trans end
+    if Library.MainGlow2 then Library.MainGlow2.ImageTransparency = math.min(Trans + 0.2, 0.97) end
 end
 
 function Library:SetGlowIntensity(Strength: number)
-    Strength = math.clamp(Strength, 0.4, 3)
-    local base = 0.62 / Strength
-    
-    if Library.MainGlow then
-        Library.MainGlow.ImageTransparency = base
-    end
-    if Library.MainGlow2 then
-        Library.MainGlow2.ImageTransparency = base + 0.23
-    end
+    Strength = math.clamp(Strength, 0.5, 3.5)
+    local base = 0.65 / Strength
+    if Library.MainGlow then Library.MainGlow.ImageTransparency = base end
+    if Library.MainGlow2 then Library.MainGlow2.ImageTransparency = base + 0.22 end
 end
 
 return Library
