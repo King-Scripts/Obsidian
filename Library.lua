@@ -6380,31 +6380,55 @@ function Library:CreateWindow(WindowInfo)
         Library.KeybindFrame.Position = UDim2.new(0, 6, 0.5, 0)
         Library.KeybindFrame.Visible = false
 
-        MainFrame = New("TextButton", {
-            BackgroundColor3 = function()
-                return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
-            end,
-            Name = "Main",
-            Text = "",
-            Position = WindowInfo.Position,
-            Size = WindowInfo.Size,
-            Visible = false,
-            Parent = ScreenGui,
+--// MainFrame con Background Image (sin Glow) \\--
+    MainFrame = New("TextButton", {
+        BackgroundColor3 = function()
+            return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
+        end,
+        Name = "Main",
+        Text = "",
+        Position = WindowInfo.Position,
+        Size = WindowInfo.Size,
+        Visible = false,
+        Parent = ScreenGui,
+        ClipsDescendants = true,
+    })
+
+    -- Background Image (la que pediste)
+    Library.BackgroundImage = New("ImageLabel", {
+        Name = "BackgroundImage",
+        BackgroundTransparency = 1,
+        Image = "https://i.imgur.com/4QZJxL9.png",
+        ImageTransparency = 0.75,           -- Ajusta aquí (0 = más visible, 1 = casi invisible)
+        ScaleType = Enum.ScaleType.Crop,    -- Mejor para fondos completos
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = 0,
+        Parent = MainFrame,
+    })
+
+    -- Corner para que la imagen respete la forma redondeada del hub
+    table.insert(
+        Library.Corners,
+        New("UICorner", {
+            CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
+            Parent = Library.BackgroundImage,
         })
-        table.insert(
-            Library.Corners,
-            New("UICorner", {
-                CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
-                Parent = MainFrame,
-            })
-        )
-        table.insert(
-            Library.Scales,
-            New("UIScale", {
-                Parent = MainFrame,
-            })
-        )
-        Library:AddOutline(MainFrame)
+    )
+
+    table.insert(
+        Library.Corners,
+        New("UICorner", {
+            CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
+            Parent = MainFrame,
+        })
+    )
+    table.insert(
+        Library.Scales,
+        New("UIScale", {
+            Parent = MainFrame,
+        })
+    )
+    Library:AddOutline(MainFrame)
         Library:MakeLine(MainFrame, {
             Position = UDim2.fromOffset(0, 48),
             Size = UDim2.new(1, 0, 0, 1),
@@ -9366,4 +9390,10 @@ Library:GiveSignal(Teams.ChildAdded:Connect(OnTeamChange))
 Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange))
 
 getgenv().Library = Library
+--// Control del Background Image \\--
+function Library:SetBackgroundTransparency(Trans: number)
+    if Library.BackgroundImage then
+        Library.BackgroundImage.ImageTransparency = math.clamp(Trans, 0, 1)
+    end
+end
 return Library
