@@ -1,3 +1,10 @@
+getgenv().ObsidianTheme = getgenv().ObsidianTheme or {
+    Accent = Color3.fromRGB(0, 170, 255),
+    Background = Color3.fromRGB(20, 20, 20),
+    Secondary = Color3.fromRGB(30, 30, 30),
+    Text = Color3.fromRGB(255, 255, 255)
+}
+
 local cloneref = (cloneref or clonereference or function(instance: any)
     return instance
 end)
@@ -8,14 +15,7 @@ local SoundService: SoundService = cloneref(game:GetService("SoundService"))
 local UserInputService: UserInputService = cloneref(game:GetService("UserInputService"))
 local TextService: TextService = cloneref(game:GetService("TextService"))
 local Teams: Teams = cloneref(game:GetService("Teams"))
-local TweenService: TweenService = cloneref(game:GetService("TweenService"))
-
-getgenv().ObsidianTheme = getgenv().ObsidianTheme or {
-    Accent = Color3.fromRGB(0, 170, 255),
-    Background = Color3.fromRGB(20, 20, 20),
-    Secondary = Color3.fromRGB(30, 30, 30),
-    Text = Color3.fromRGB(255, 255, 255)
-}
+local TweenService: TweenService = cloneref(game:GetService("TweenService")
 
 local getgenv = getgenv or function()
     return shared
