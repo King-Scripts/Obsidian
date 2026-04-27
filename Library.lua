@@ -231,6 +231,14 @@ local Library = {
         DarkColor = Color3.new(0, 0, 0),
         WhiteColor = Color3.new(1, 1, 1),
     },
+    
+Library.NeonGlow = {
+    Enabled = true,
+    TitleGlowColor = Color3.fromRGB(200, 80, 255),     -- Color del glow del título
+    BorderGlowColor = Color3.fromRGB(170, 50, 255),    -- Color del glow del borde del hub
+    PulseSpeed = 2.8,                                  -- Velocidad del brillo (más alto = más rápido)
+    BorderThickness = 3.5,                             -- Grosor del glow
+}
 
     Registry = {},
     Scales = {},
@@ -6380,6 +6388,7 @@ function Library:CreateWindow(WindowInfo)
         Library.KeybindFrame.Position = UDim2.new(0, 6, 0.5, 0)
         Library.KeybindFrame.Visible = false
 
+                --// Main Frame con Neon Glow en el borde
         MainFrame = New("TextButton", {
             BackgroundColor3 = function()
                 return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
@@ -6391,6 +6400,7 @@ function Library:CreateWindow(WindowInfo)
             Visible = false,
             Parent = ScreenGui,
         })
+
         table.insert(
             Library.Corners,
             New("UICorner", {
@@ -6404,31 +6414,23 @@ function Library:CreateWindow(WindowInfo)
                 Parent = MainFrame,
             })
         )
-        Library:AddOutline(MainFrame)
-        Library:MakeLine(MainFrame, {
-            Position = UDim2.fromOffset(0, 48),
-            Size = UDim2.new(1, 0, 0, 1),
-        })
 
-        DividerLine = New("Frame", {
-            BackgroundColor3 = "OutlineColor",
-            Position = UDim2.fromOffset(InitialLeftWidth, 0),
-            Size = UDim2.new(0, 1, 1, -21),
+        -- Neon Glow del borde exterior
+        local BorderGlow1 = New("UIStroke", {
+            Name = "NeonBorder1",
+            Color = Library.NeonGlow.BorderGlowColor,
+            Thickness = Library.NeonGlow.BorderThickness,
+            Transparency = 0.35,
             Parent = MainFrame,
         })
 
-        if WindowInfo.BackgroundImage then
-            BackgroundImage = New("ImageLabel", {
-                Image = WindowInfo.BackgroundImage,
-                Position = UDim2.fromScale(0, 0),
-                Size = UDim2.fromScale(1, 1),
-                ScaleType = Enum.ScaleType.Stretch,
-                ZIndex = 999,
-                BackgroundTransparency = 1,
-                ImageTransparency = 0.75,
-                Parent = MainFrame,
-            })
-
+        local BorderGlow2 = New("UIStroke", {
+            Name = "NeonBorder2",
+            Color = Library.NeonGlow.BorderGlowColor,
+            Thickness = Library.NeonGlow.BorderThickness + 5,
+            Transparency = 0.75,
+            Parent = MainFrame,
+        })
             table.insert(
                 Library.Corners,
                 New("UICorner", {
@@ -6490,13 +6492,34 @@ function Library:CreateWindow(WindowInfo)
             20,
             TitleHolder.AbsoluteSize.X - (WindowInfo.Icon and WindowInfo.IconSize.X.Offset + 6 or 0) - 12
         )
-        WindowTitle = New("TextLabel", {
+                WindowTitle = New("TextLabel", {
             BackgroundTransparency = 1,
-            Size = UDim2.new(0, X, 1, 0),
+            Size = UDim2.new(0, TitleX, 1, 0),
             Text = WindowInfo.Title,
             TextSize = 20,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
             Parent = TitleHolder,
         })
+
+        -- Neon Glow del título "H U B"
+        local TitleStroke1 = New("UIStroke", {
+            Name = "TitleNeon1",
+            Color = Library.NeonGlow.TitleGlowColor,
+            Thickness = 2.5,
+            Transparency = 0.25,
+            Parent = WindowTitle,
+        })
+
+        local TitleStroke2 = New("UIStroke", {
+            Name = "TitleNeon2",
+            Color = Library.NeonGlow.TitleGlowColor,
+            Thickness = 6,
+            Transparency = 0.65,
+            Parent = WindowTitle,
+        })
+
+        WindowTitle.TextStrokeTransparency = 0.2
+        WindowTitle.TextStrokeColor3 = Library.NeonGlow.TitleGlowColor
 
         --// Top Right Bar
         RightWrapper = New("Frame", {
@@ -8500,6 +8523,27 @@ function Library:CreateWindow(WindowInfo)
             end
         end
     end
+        -- ==================== PULSE DEL NEON GLOW ====================
+        -- Brillo que respira en el borde y en el título
+        local pulseT = 0
+        Library:GiveSignal(RunService.Heartbeat:Connect(function(dt)
+            if not MainFrame or not MainFrame.Parent then 
+                return 
+            end
+
+            pulseT += dt * Library.NeonGlow.PulseSpeed
+
+            -- Pulse del borde exterior
+            local borderAlpha = Library.NeonGlow.BorderTransparencyBase + math.sin(pulseT) * 0.25
+            if BorderGlow2 then
+                BorderGlow2.Transparency = math.clamp(borderAlpha, 0.4, 0.85)
+            end
+
+            -- Pulse del título "H U B"
+            if TitleStroke2 then
+                TitleStroke2.Transparency = 0.55 + math.sin(pulseT * 1.3) * 0.2
+            end
+        end))
 
     function Library:Toggle(Value: boolean?)
         return Window:Toggle(Value)
