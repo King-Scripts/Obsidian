@@ -6380,31 +6380,63 @@ function Library:CreateWindow(WindowInfo)
         Library.KeybindFrame.Position = UDim2.new(0, 6, 0.5, 0)
         Library.KeybindFrame.Visible = false
 
-        MainFrame = New("TextButton", {
-            BackgroundColor3 = function()
-                return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
-            end,
-            Name = "Main",
-            Text = "",
-            Position = WindowInfo.Position,
-            Size = WindowInfo.Size,
-            Visible = false,
-            Parent = ScreenGui,
+    --// MainFrame con Glow Coloreable \\--
+    MainFrame = New("TextButton", {
+        BackgroundColor3 = function()
+            return Library:GetBetterColor(Library.Scheme.BackgroundColor, -1)
+        end,
+        Name = "Main",
+        Text = "",
+        Position = WindowInfo.Position,
+        Size = WindowInfo.Size,
+        Visible = false,
+        Parent = ScreenGui,
+    })
+
+    -- Glow principal (borde exterior)
+    local MainGlow = New("ImageLabel", {
+        Name = "Glow",
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://1316045217",  -- Glow suave y bonito
+        ImageColor3 = "AccentColor",        -- Color del glow (coloreable)
+        ImageTransparency = 0.65,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(10, 10, 118, 118),
+        Size = UDim2.new(1, 30, 1, 30),     -- Más grande que el frame
+        Position = UDim2.new(0, -15, 0, -15),
+        ZIndex = MainFrame.ZIndex - 1,
+        Parent = MainFrame,
+    })
+
+    -- Glow secundario más fuerte (opcional, para más profundidad)
+    local MainGlow2 = New("ImageLabel", {
+        Name = "GlowStrong",
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://1316045217",
+        ImageColor3 = "AccentColor",
+        ImageTransparency = 0.85,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(10, 10, 118, 118),
+        Size = UDim2.new(1, 50, 1, 50),
+        Position = UDim2.new(0, -25, 0, -25),
+        ZIndex = MainFrame.ZIndex - 2,
+        Parent = MainFrame,
+    })
+
+    table.insert(
+        Library.Corners,
+        New("UICorner", {
+            CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
+            Parent = MainFrame,
         })
-        table.insert(
-            Library.Corners,
-            New("UICorner", {
-                CornerRadius = UDim.new(0, WindowInfo.CornerRadius),
-                Parent = MainFrame,
-            })
-        )
-        table.insert(
-            Library.Scales,
-            New("UIScale", {
-                Parent = MainFrame,
-            })
-        )
-        Library:AddOutline(MainFrame)
+    )
+    table.insert(
+        Library.Scales,
+        New("UIScale", {
+            Parent = MainFrame,
+        })
+    )
+    Library:AddOutline(MainFrame)
         Library:MakeLine(MainFrame, {
             Position = UDim2.fromOffset(0, 48),
             Size = UDim2.new(1, 0, 0, 1),
@@ -9366,4 +9398,38 @@ Library:GiveSignal(Teams.ChildAdded:Connect(OnTeamChange))
 Library:GiveSignal(Teams.ChildRemoved:Connect(OnTeamChange))
 
 getgenv().Library = Library
+
+--// Glow Functions \\--
+function Library:SetMainGlowColor(Color: Color3)
+    if MainGlow then
+        MainGlow.ImageColor3 = Color
+    end
+    if MainGlow2 then
+        MainGlow2.ImageColor3 = Color
+    end
+end
+
+function Library:SetMainGlowTransparency(Transparency: number)
+    Transparency = math.clamp(Transparency, 0, 1)
+    if MainGlow then
+        MainGlow.ImageTransparency = Transparency
+    end
+    if MainGlow2 then
+        MainGlow2.ImageTransparency = math.min(Transparency + 0.2, 0.95)
+    end
+end
+
+function Library:SetMainGlowIntensity(Strength: number)
+    -- Strength: 0.3 = sutil, 1 = fuerte
+    Strength = math.clamp(Strength, 0.1, 2)
+    local baseTrans = 0.65 / Strength
+    
+    if MainGlow then
+        MainGlow.ImageTransparency = baseTrans
+    end
+    if MainGlow2 then
+        MainGlow2.ImageTransparency = baseTrans + 0.2
+    end
+end
+
 return Library
