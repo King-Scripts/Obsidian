@@ -1,10 +1,3 @@
-getgenv().ObsidianTheme = getgenv().ObsidianTheme or {
-    Accent = Color3.fromRGB(0, 170, 255),
-    Background = Color3.fromRGB(20, 20, 20),
-    Secondary = Color3.fromRGB(30, 30, 30),
-    Text = Color3.fromRGB(255, 255, 255)
-}
-
 local cloneref = (cloneref or clonereference or function(instance: any)
     return instance
 end)
@@ -15,7 +8,7 @@ local SoundService: SoundService = cloneref(game:GetService("SoundService"))
 local UserInputService: UserInputService = cloneref(game:GetService("UserInputService"))
 local TextService: TextService = cloneref(game:GetService("TextService"))
 local Teams: Teams = cloneref(game:GetService("Teams"))
-local TweenService: TweenService = cloneref(game:GetService("TweenService")
+local TweenService: TweenService = cloneref(game:GetService("TweenService"))
 
 local getgenv = getgenv or function()
     return shared
@@ -226,11 +219,11 @@ local Library = {
 
     IsLightTheme = false,
     Scheme = {
-        Frame.BackgroundColor3 = getgenv().ObsidianTheme.BackgroundColor
-        MainFrame.BackgroundColor3 = getgenv().ObsidianTheme.MainColor
-        Button.BackgroundColor3 = getgenv().ObsidianTheme.AccentColor
-        Stroke.Color = getgenv().ObsidianTheme.OutlineColor
-        TextLabel.TextColor3 = getgenv().ObsidianTheme.FontColor
+        BackgroundColor = Color3.fromRGB(15, 15, 15),
+        MainColor = Color3.fromRGB(25, 25, 25),
+        AccentColor = Color3.fromRGB(125, 85, 255),
+        OutlineColor = Color3.fromRGB(40, 40, 40),
+        FontColor = Color3.new(1, 1, 1),
         Font = Font.fromEnum(Enum.Font.Code),
 
         RedColor = Color3.fromRGB(255, 50, 50),
